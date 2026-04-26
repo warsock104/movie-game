@@ -226,8 +226,11 @@ def main():
     pool     = fetch_popular_pool(pages=15)
     random.shuffle(pool)
 
+    current_year = str(datetime.date.today().year)
     for movie in pool:
         if movie["id"] in used_ids:
+            continue
+        if (movie.get("release_date") or "")[:4] == current_year:
             continue
         print(f"  Trying: {movie['title']} ({movie.get('release_date','')[:4]})")
         try:

@@ -370,7 +370,9 @@ async function buildPracticePuzzle() {
     sort_by: "vote_count.desc", vote_count_gte: 10000,
     with_original_language: "en", page,
   });
-  const candidates = pool.results || [];
+  const candidates = (pool.results || []).filter(m =>
+    (m.release_date || "").slice(0, 4) !== String(new Date().getFullYear())
+  );
   if (!candidates.length) return null;
   const movie = candidates[Math.floor(Math.random() * candidates.length)];
 
