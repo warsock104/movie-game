@@ -6,12 +6,14 @@ const TMDB_IMG      = "https://image.tmdb.org/t/p/w342";
 const MAX_GUESSES   = 5;
 
 // ─── State ─────────────────────────────────────────────────────────────────
-let puzzle       = null;   // { answer_tmdb_id, answer_title, answer_poster, clues[] }
-let cluesShown   = 1;      // how many clue cards are visible
-let guessCount   = 0;
-let selectedMovie = null;  // { id, title, year, poster }
-let gameOver     = false;
-let searchTimer  = null;
+let puzzle        = null;   // { answer_tmdb_id, answer_title, answer_poster, clues[] }
+let cluesShown    = 1;      // how many clue cards are visible
+let guessCount    = 0;
+let selectedMovie = null;   // { id, title, year, poster }
+let gameOver      = false;
+let searchTimer   = null;
+let isPractice    = false;
+let searchSetup   = false;
 
 // ─── DOM refs ──────────────────────────────────────────────────────────────
 const clueGrid      = document.getElementById("clue-grid");
@@ -106,6 +108,9 @@ function renderClues() {
 
 // ─── Search ─────────────────────────────────────────────────────────────────
 function setupSearch() {
+  if (searchSetup) return;
+  searchSetup = true;
+
   searchInput.addEventListener("input", () => {
     selectedMovie = null;
     guessBtn.disabled = true;
@@ -252,7 +257,12 @@ function endGame(won) {
 
   endScreen.classList.remove("hidden");
 
-  document.getElementById("share-btn").addEventListener("click", shareResult.bind(null, won));
+  const shareBtn      = document.getElementById("share-btn");
+  const newPracticeBtn = document.getElementById("new-practice-btn");
+  shareBtn.style.display      = isPractice ? "none" : "";
+  newPracticeBtn.style.display = isPractice ? ""     : "none";
+  shareBtn.onclick      = () => shareResult(won);
+  newPracticeBtn.onclick = () => startPractice();
 
   // Disable input
   searchInput.disabled = true;
@@ -278,6 +288,7 @@ function shareResult(won) {
 
 // ─── Persist state ────────────────────────────────────────────────────────────
 function saveState() {
+  if (isPractice) return;
   const state = { guessCount, cluesShown, gameOver, guesses: [] };
   guessHistory.querySelectorAll(".guess-row").forEach((r) => {
     state.guesses.push({ title: r.querySelector(".guess-name").textContent, correct: r.classList.contains("correct") });
@@ -311,6 +322,140 @@ function restoreState(saved) {
 function localDateString() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// ─── Practice mode ────────────────────────────────────────────────────────────
+document.getElementById("practice-btn").addEventListener("click", startPractice);
+
+async function startPractice() {
+  const btn = document.getElementById("practice-btn");
+  btn.textContent = "Loading…";
+  btn.disabled = true;
+
+  let practicePuzzle = null;
+  for (let i = 0; i < 8; i++) {
+    try { practicePuzzle = await buildPracticePuzzle(); } catch (e) { /* retry */ }
+    if (practicePuzzle) break;
+  }
+
+  btn.textContent = "New Practice";
+  btn.disabled = false;
+
+  if (!practicePuzzle) { alert("Couldn't build a practice puzzle — try again."); return; }
+
+  puzzle        = practicePuzzle;
+  cluesShown    = 1;
+  guessCount    = 0;
+  selectedMovie = null;
+  gameOver      = false;
+  isPractice    = true;
+
+  guessHistory.innerHTML = "";
+  endScreen.classList.add("hidden");
+  searchInput.disabled   = false;
+  searchInput.value      = "";
+  guessBtn.disabled      = true;
+  document.getElementById("practice-banner").style.display = "block";
+
+  renderClues();
+  setupSearch();
+}
+
+async function buildPracticePuzzle() {
+  const page = Math.ceil(Math.random() * 5);
+  const pool  = await tmdbFetch("/discover/movie", {
+    sort_by: "vote_count.desc", vote_count_gte: 10000,
+    with_original_language: "en", page,
+  });
+  const candidates = pool.results || [];
+  if (!candidates.length) return null;
+  const movie = candidates[Math.floor(Math.random() * candidates.length)];
+
+  const details = await tmdbFetch(`/movie/${movie.id}`, { append_to_response: "credits" });
+  const credits = details.credits || {};
+  const genres  = details.genres  || [];
+
+  const clues   = [];
+  const usedIds = new Set([movie.id]);
+
+  // Director
+  const directors = (credits.crew || []).filter(c => c.job === "Director");
+  if (directors.length) {
+    const d = await tmdbFetch("/discover/movie", {
+      with_crew: directors[0].id, sort_by: "vote_count.desc",
+      vote_count_gte: 1000, with_original_language: "en", page: 1,
+    });
+    const c = (d.results || []).filter(m => !usedIds.has(m.id));
+    if (c.length) { const m = c[0]; usedIds.add(m.id); clues.push(makeClue("DIRECTOR", m)); }
+  }
+
+  // Genre
+  if (genres.length) {
+    const d = await tmdbFetch("/discover/movie", {
+      with_genres: genres[0].id, sort_by: "vote_count.desc",
+      vote_count_gte: 1000, with_original_language: "en", page: 1,
+    });
+    const c = (d.results || []).filter(m => !usedIds.has(m.id));
+    if (c.length) {
+      const m = c[Math.floor(Math.random() * Math.min(10, c.length))];
+      usedIds.add(m.id); clues.push(makeClue("GENRE", m));
+    }
+  }
+
+  // Year
+  if (details.release_date) {
+    const d = await tmdbFetch("/discover/movie", {
+      primary_release_year: details.release_date.slice(0, 4),
+      sort_by: "vote_count.desc", vote_count_gte: 1000,
+      with_original_language: "en", page: 1,
+    });
+    const c = (d.results || []).filter(m => !usedIds.has(m.id));
+    if (c.length) {
+      const m = c[Math.floor(Math.random() * Math.min(10, c.length))];
+      usedIds.add(m.id); clues.push(makeClue("YEAR", m));
+    }
+  }
+
+  // Actors (need 2)
+  const cast = (credits.cast || []).sort((a, b) => (a.order || 99) - (b.order || 99));
+  const usedActorIds = new Set();
+  for (const actor of cast.slice(0, 6)) {
+    if (clues.filter(c => c.category === "ACTOR").length >= 2) break;
+    if (usedActorIds.has(actor.id)) continue;
+    const d = await tmdbFetch("/discover/movie", {
+      with_cast: actor.id, sort_by: "vote_count.desc",
+      vote_count_gte: 1000, with_original_language: "en", page: 1,
+    });
+    const c = (d.results || []).filter(m => !usedIds.has(m.id));
+    if (c.length) {
+      const m = c[Math.floor(Math.random() * Math.min(8, c.length))];
+      usedIds.add(m.id); usedActorIds.add(actor.id); clues.push(makeClue("ACTOR", m));
+    }
+  }
+
+  if (clues.length < 5) return null;
+
+  return {
+    answer_tmdb_id: movie.id,
+    answer_title:   movie.title,
+    answer_poster:  movie.poster_path ? TMDB_IMG + movie.poster_path : null,
+    clues,
+  };
+}
+
+function makeClue(category, movie) {
+  return {
+    category,
+    hint_tmdb_id: movie.id,
+    hint_title:   movie.title,
+    poster_url:   movie.poster_path ? TMDB_IMG + movie.poster_path : null,
+  };
+}
+
+async function tmdbFetch(path, params = {}) {
+  params.api_key = TMDB_KEY;
+  const res = await fetch(`https://api.themoviedb.org/3${path}?${new URLSearchParams(params)}`);
+  return res.json();
 }
 
 function showNoPuzzle() {

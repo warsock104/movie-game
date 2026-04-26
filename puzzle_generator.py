@@ -20,8 +20,8 @@ TMDB_BASE     = "https://api.themoviedb.org/3"
 TMDB_IMG      = "https://image.tmdb.org/t/p/w342"
 
 # Popularity thresholds — keeps answers well-known
-MIN_VOTE_COUNT  = 3000
-MIN_POPULARITY  = 20
+MIN_VOTE_COUNT  = 10000
+MIN_POPULARITY  = 30
 # Clue hint movies must still be recognisable
 HINT_MIN_VOTES  = 1000
 
@@ -186,10 +186,8 @@ def build_puzzle(movie, used_hint_ids=None):
 # ─── Supabase upsert ───────────────────────────────────────────────────────────
 
 def upsert_puzzle(date_str, puzzle_data):
-    import json
     payload = {"puzzle_date": date_str, **puzzle_data}
-    # Serialise clues list to JSON string for Supabase
-    payload["clues"] = json.dumps(puzzle_data["clues"])
+    # clues is already a list — pass as-is so requests serialises it as a JSON array
 
     url = f"{SUPABASE_URL}/rest/v1/daily_puzzles"
     r = requests.post(url, json=payload, headers={
