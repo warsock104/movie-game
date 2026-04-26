@@ -424,10 +424,24 @@ async function buildPracticePuzzle() {
     }
   }
 
-  // Actors (need 2)
+  // Actor 1: always the top-billed lead
   const cast = (credits.cast || []).sort((a, b) => (a.order || 99) - (b.order || 99));
   const usedActorIds = new Set();
-  for (const actor of cast.slice(0, 6)) {
+  if (cast.length) {
+    const lead = cast[0];
+    const d = await tmdbFetch("/discover/movie", {
+      with_cast: lead.id, sort_by: "vote_count.desc",
+      vote_count_gte: 1000, with_original_language: "en", page: 1,
+    });
+    const c = (d.results || []).filter(m => !usedIds.has(m.id));
+    if (c.length) {
+      const m = c[Math.floor(Math.random() * Math.min(8, c.length))];
+      usedIds.add(m.id); usedActorIds.add(lead.id); clues.push(makeClue("ACTOR", m));
+    }
+  }
+
+  // Actor 2: next available supporting actor
+  for (const actor of cast.slice(1, 6)) {
     if (clues.filter(c => c.category === "ACTOR").length >= 2) break;
     if (usedActorIds.has(actor.id)) continue;
     const d = await tmdbFetch("/discover/movie", {

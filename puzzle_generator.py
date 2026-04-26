@@ -133,10 +133,13 @@ def find_year_clue(answer_id, release_date):
     return {"category": "YEAR", "hint_tmdb_id": m["id"],
             "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
 
-def find_actor_clue(answer_id, credits, exclude_ids):
+def find_actor_clue(answer_id, credits, exclude_ids, lead_only=False):
     cast = [c for c in credits.get("cast", []) if c["id"] not in exclude_ids]
     cast.sort(key=lambda c: c.get("order", 99))
-    for actor in cast[:5]:
+    # lead_only=True: only try the top-billed actor (first ACTOR clue)
+    # lead_only=False: try actors 2-6 (second ACTOR clue)
+    pool = cast[:1] if lead_only else cast[1:6]
+    for actor in pool:
         data = tmdb("/discover/movie",
                     with_cast=actor["id"],
                     sort_by="vote_count.desc",
@@ -174,7 +177,7 @@ def build_puzzle(movie, used_hint_ids=None):
         lambda: find_director_clue(movie["id"], movie["id"], credits),
         lambda: find_genre_clue(movie["id"], genres),
         lambda: find_year_clue(movie["id"], movie.get("release_date")),
-        lambda: find_actor_clue(movie["id"], credits, used_actor_ids),
+        lambda: find_actor_clue(movie["id"], credits, used_actor_ids, lead_only=True),
         lambda: find_actor_clue(movie["id"], credits, used_actor_ids),
     ]
 
