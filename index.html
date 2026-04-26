@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineClue — Daily Movie Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🎬 CineClue</h1>
+    <p class="subtitle">Guess today's movie from the clues.</p>
+  </header>
+
+  <main>
+    <!-- Clue grid -->
+    <section id="clue-grid">
+      <!-- Clue cards injected by JS -->
+    </section>
+
+    <!-- Guess input -->
+    <section id="guess-section">
+      <div id="search-wrapper">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search for a movie…"
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <ul id="search-results"></ul>
+      </div>
+      <button id="guess-btn" disabled>Guess</button>
+    </section>
+
+    <!-- Previous guesses -->
+    <section id="guess-history"></section>
+
+    <!-- End state (win / lose) -->
+    <div id="end-screen" class="hidden">
+      <div id="end-card">
+        <p id="end-emoji"></p>
+        <h2 id="end-title"></h2>
+        <p id="end-message"></p>
+        <img id="end-poster" src="" alt="">
+        <p id="end-movie-title"></p>
+        <button id="share-btn">Share Result</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
