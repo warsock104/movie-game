@@ -152,6 +152,11 @@ def build_puzzle(movie, used_hint_ids=None):
         used_hint_ids = set()
 
     details = get_movie_details(movie["id"])
+
+    # Skip sequels / franchise entries
+    if details.get("belongs_to_collection"):
+        return None
+
     credits = details.get("credits", {})
     genres  = details.get("genres", [])
 
