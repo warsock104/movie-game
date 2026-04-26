@@ -257,11 +257,11 @@ function endGame(won) {
 
   endScreen.classList.remove("hidden");
 
-  const shareBtn      = document.getElementById("share-btn");
+  const shareBtn       = document.getElementById("share-btn");
   const newPracticeBtn = document.getElementById("new-practice-btn");
-  shareBtn.style.display      = isPractice ? "none" : "";
-  newPracticeBtn.style.display = isPractice ? ""     : "none";
-  shareBtn.onclick      = () => shareResult(won);
+  shareBtn.style.display       = isPractice ? "none" : "";
+  newPracticeBtn.style.display = "";
+  shareBtn.onclick       = () => shareResult(won);
   newPracticeBtn.onclick = () => startPractice();
 
   // Disable input
