@@ -123,6 +123,15 @@ main {
   object-fit: cover;
   border: 2px solid var(--border);
   display: block;
+  background: var(--surface);
+  background-image: linear-gradient(90deg, var(--surface) 25%, #24243080 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
 }
 
 .clue-poster-placeholder {

@@ -78,9 +78,10 @@ function renderClues() {
 
       const img = document.createElement("img");
       img.className = "clue-poster";
-      img.src = clue.poster_url || "";
       img.alt = clue.hint_title;
-      img.loading = "lazy";
+      img.onload  = () => img.style.backgroundImage = "none";
+      img.onerror = () => img.style.visibility = "hidden";
+      img.src = clue.poster_url || "";
 
       const title = document.createElement("p");
       title.className = "clue-hint-title";
