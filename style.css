@@ -155,6 +155,16 @@ main {
   line-height: 1.3;
 }
 
+.clue-connection {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: center;
+  max-width: var(--poster-w);
+  margin-top: 2px;
+  animation: fadeIn 0.3s ease;
+}
+
 /* ── Guess input ─────────────────────────────── */
 #guess-section {
   display: flex;

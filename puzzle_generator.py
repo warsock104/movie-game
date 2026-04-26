@@ -94,7 +94,8 @@ def find_director_clue(movie_id, answer_id, credits):
     if not candidates:
         return None
     m = candidates[0]
-    return {"category": "DIRECTOR", "hint_tmdb_id": m["id"],
+    return {"category": "DIRECTOR", "connection": director["name"],
+            "hint_tmdb_id": m["id"],
             "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
 
 def find_genre_clue(answer_id, genres):
@@ -112,7 +113,7 @@ def find_genre_clue(answer_id, genres):
         return None
     # Pick randomly from top 20 so clues vary day-to-day
     m = random.choice(candidates[:20])
-    return {"category": "GENRE", "genre_name": genres[0]["name"],
+    return {"category": "GENRE", "connection": genres[0]["name"],
             "hint_tmdb_id": m["id"],
             "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
 
@@ -130,7 +131,8 @@ def find_year_clue(answer_id, release_date):
     if not candidates:
         return None
     m = random.choice(candidates[:10])
-    return {"category": "YEAR", "hint_tmdb_id": m["id"],
+    return {"category": "YEAR", "connection": year,
+            "hint_tmdb_id": m["id"],
             "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
 
 def find_actor_clue(answer_id, credits, exclude_ids, lead_only=False):
@@ -150,7 +152,8 @@ def find_actor_clue(answer_id, credits, exclude_ids, lead_only=False):
         if candidates:
             m = random.choice(candidates[:8])
             exclude_ids.add(actor["id"])
-            return {"category": "ACTOR", "hint_tmdb_id": m["id"],
+            return {"category": "ACTOR", "connection": actor["name"],
+                    "hint_tmdb_id": m["id"],
                     "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
     return None
 

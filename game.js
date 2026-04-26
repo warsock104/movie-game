@@ -72,9 +72,7 @@ function renderClues() {
       // Revealed clue
       const label = document.createElement("span");
       label.className = "clue-label";
-      label.textContent = clue.category === "GENRE" && clue.genre_name
-        ? `GENRE: ${clue.genre_name}`
-        : clue.category;
+      label.textContent = clue.category;
 
       const img = document.createElement("img");
       img.className = "clue-poster";
@@ -90,6 +88,14 @@ function renderClues() {
       card.appendChild(label);
       card.appendChild(img);
       card.appendChild(title);
+
+      // Show the connection answer once the user has guessed past this clue
+      if (clue.connection && (gameOver || i < guessCount)) {
+        const conn = document.createElement("p");
+        conn.className = "clue-connection";
+        conn.textContent = connectionLabel(clue);
+        card.appendChild(conn);
+      }
     } else {
       // Locked clue placeholder
       const placeholder = document.createElement("div");
@@ -395,7 +401,10 @@ async function buildPracticePuzzle() {
       vote_count_gte: 1000, with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
-    if (c.length) { const m = c[0]; usedIds.add(m.id); clues.push(makeClue("DIRECTOR", m)); }
+    if (c.length) {
+      const m = c[0]; usedIds.add(m.id);
+      clues.push({ ...makeClue("DIRECTOR", m), connection: directors[0].name });
+    }
   }
 
   // Genre
@@ -408,21 +417,22 @@ async function buildPracticePuzzle() {
     if (c.length) {
       const m = c[Math.floor(Math.random() * Math.min(20, c.length))];
       usedIds.add(m.id);
-      clues.push({ ...makeClue("GENRE", m), genre_name: genres[0].name });
+      clues.push({ ...makeClue("GENRE", m), connection: genres[0].name });
     }
   }
 
   // Year
   if (details.release_date) {
+    const year = details.release_date.slice(0, 4);
     const d = await tmdbFetch("/discover/movie", {
-      primary_release_year: details.release_date.slice(0, 4),
+      primary_release_year: year,
       sort_by: "vote_count.desc", vote_count_gte: 1000,
       with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
       const m = c[Math.floor(Math.random() * Math.min(10, c.length))];
-      usedIds.add(m.id); clues.push(makeClue("YEAR", m));
+      usedIds.add(m.id); clues.push({ ...makeClue("YEAR", m), connection: year });
     }
   }
 
@@ -438,7 +448,8 @@ async function buildPracticePuzzle() {
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
       const m = c[Math.floor(Math.random() * Math.min(8, c.length))];
-      usedIds.add(m.id); usedActorIds.add(lead.id); clues.push(makeClue("ACTOR", m));
+      usedIds.add(m.id); usedActorIds.add(lead.id);
+      clues.push({ ...makeClue("ACTOR", m), connection: lead.name });
     }
   }
 
@@ -453,7 +464,8 @@ async function buildPracticePuzzle() {
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
       const m = c[Math.floor(Math.random() * Math.min(8, c.length))];
-      usedIds.add(m.id); usedActorIds.add(actor.id); clues.push(makeClue("ACTOR", m));
+      usedIds.add(m.id); usedActorIds.add(actor.id);
+      clues.push({ ...makeClue("ACTOR", m), connection: actor.name });
     }
   }
 
@@ -474,6 +486,16 @@ function makeClue(category, movie) {
     hint_title:   movie.title,
     poster_url:   movie.poster_path ? TMDB_IMG + movie.poster_path : null,
   };
+}
+
+function connectionLabel(clue) {
+  switch (clue.category) {
+    case "DIRECTOR": return `Director: ${clue.connection}`;
+    case "GENRE":    return `Genre: ${clue.connection}`;
+    case "YEAR":     return `Year: ${clue.connection}`;
+    case "ACTOR":    return `Starring: ${clue.connection}`;
+    default:         return clue.connection;
+  }
 }
 
 async function tmdbFetch(path, params = {}) {
