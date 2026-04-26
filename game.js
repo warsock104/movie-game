@@ -288,7 +288,7 @@ function shareResult(won) {
     else if (won && i === guessCount - 1)  squares.push("🟩");
     else squares.push("⬛");
   }
-  const text = `🎬 CineClue ${localDateString()}\n${squares.join("")}\nhttps://warsock104.github.io/movie-game/`;
+  const text = `🎬 CineClue ${localDateString()}\n${squares.join("")}\nhttps://cineclue.github.io/movie-game/`;
   navigator.clipboard.writeText(text).then(() => {
     document.getElementById("share-btn").textContent = "Copied!";
     setTimeout(() => { document.getElementById("share-btn").textContent = "Share Result"; }, 2000);
