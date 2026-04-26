@@ -199,7 +199,7 @@ def upsert_puzzle(date_str, puzzle_data):
         "Prefer":        "resolution=merge-duplicates",
     }, timeout=10)
     r.raise_for_status()
-    print(f"✅ Puzzle for {date_str} saved: {puzzle_data['answer_title']}")
+    print(f"[OK] Puzzle for {date_str} saved: {puzzle_data['answer_title']}")
 
 # ─── Main ──────────────────────────────────────────────────────────────────────
 
@@ -220,13 +220,13 @@ def main():
         try:
             puzzle = build_puzzle(movie)
         except Exception as e:
-            print(f"    ⚠ Skipped ({e})")
+            print(f"    [skip] ({e})")
             continue
         if puzzle:
             upsert_puzzle(date_str, puzzle)
             return
 
-    print("❌ Could not find a suitable movie. Try expanding the pool.")
+    print("[FAIL] Could not find a suitable movie. Try expanding the pool.")
 
 if __name__ == "__main__":
     main()

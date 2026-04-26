@@ -1,7 +1,7 @@
 // ─── Config ────────────────────────────────────────────────────────────────
-const SUPABASE_URL  = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON = "YOUR_SUPABASE_ANON_KEY";
-const TMDB_KEY      = "YOUR_TMDB_API_KEY";
+const SUPABASE_URL  = "https://vocsfxosmbpcjvadwddf.supabase.co";
+const SUPABASE_ANON = "sb_publishable_gxIgyHUktN-BuChGRy_5YA_6WdeCMiU";
+const TMDB_KEY      = "74aa14a014f685118e47f13cfaaabf07";
 const TMDB_IMG      = "https://image.tmdb.org/t/p/w342";
 const MAX_GUESSES   = 5;
 
@@ -269,7 +269,7 @@ function shareResult(won) {
     else if (won && i === guessCount - 1)  squares.push("🟩");
     else squares.push("⬛");
   }
-  const text = `🎬 CineClue ${localDateString()}\n${squares.join("")}\nhttps://YOUR_GAME_URL`;
+  const text = `🎬 CineClue ${localDateString()}\n${squares.join("")}\nhttps://warsock104.github.io/movie-game/`;
   navigator.clipboard.writeText(text).then(() => {
     document.getElementById("share-btn").textContent = "Copied!";
     setTimeout(() => { document.getElementById("share-btn").textContent = "Share Result"; }, 2000);
