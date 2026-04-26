@@ -30,6 +30,12 @@ CLUE_ORDER = ["DIRECTOR", "GENRE", "YEAR", "ACTOR", "ACTOR"]
 # ─── TMDB helpers ─────────────────────────────────────────────────────────────
 
 def tmdb(path, **params):
+    # TMDB discover uses dot notation for comparisons (e.g. vote_count.gte)
+    for underscore, dot in [("vote_count_gte", "vote_count.gte"),
+                             ("vote_average_gte", "vote_average.gte"),
+                             ("popularity_gte", "popularity.gte")]:
+        if underscore in params:
+            params[dot] = params.pop(underscore)
     params["api_key"] = TMDB_KEY
     r = requests.get(f"{TMDB_BASE}{path}", params=params, timeout=10)
     r.raise_for_status()
@@ -104,9 +110,10 @@ def find_genre_clue(answer_id, genres):
     candidates = [m for m in data.get("results", []) if m["id"] != answer_id]
     if not candidates:
         return None
-    # Pick randomly from top 10 so clues vary day-to-day
-    m = random.choice(candidates[:10])
-    return {"category": "GENRE", "hint_tmdb_id": m["id"],
+    # Pick randomly from top 20 so clues vary day-to-day
+    m = random.choice(candidates[:20])
+    return {"category": "GENRE", "genre_name": genres[0]["name"],
+            "hint_tmdb_id": m["id"],
             "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
 
 def find_year_clue(answer_id, release_date):

@@ -72,7 +72,9 @@ function renderClues() {
       // Revealed clue
       const label = document.createElement("span");
       label.className = "clue-label";
-      label.textContent = clue.category;
+      label.textContent = clue.category === "GENRE" && clue.genre_name
+        ? `GENRE: ${clue.genre_name}`
+        : clue.category;
 
       const img = document.createElement("img");
       img.className = "clue-poster";
@@ -372,6 +374,10 @@ async function buildPracticePuzzle() {
   const movie = candidates[Math.floor(Math.random() * candidates.length)];
 
   const details = await tmdbFetch(`/movie/${movie.id}`, { append_to_response: "credits" });
+
+  // Skip franchise/sequel films (same rule as server-side generator)
+  if (details.belongs_to_collection) return null;
+
   const credits = details.credits || {};
   const genres  = details.genres  || [];
 
@@ -397,8 +403,9 @@ async function buildPracticePuzzle() {
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
-      const m = c[Math.floor(Math.random() * Math.min(10, c.length))];
-      usedIds.add(m.id); clues.push(makeClue("GENRE", m));
+      const m = c[Math.floor(Math.random() * Math.min(20, c.length))];
+      usedIds.add(m.id);
+      clues.push({ ...makeClue("GENRE", m), genre_name: genres[0].name });
     }
   }
 
@@ -453,6 +460,9 @@ function makeClue(category, movie) {
 }
 
 async function tmdbFetch(path, params = {}) {
+  // TMDB discover uses dot notation for comparisons (e.g. vote_count.gte)
+  if ("vote_count_gte" in params) { params["vote_count.gte"] = params.vote_count_gte; delete params.vote_count_gte; }
+  if ("popularity_gte"  in params) { params["popularity.gte"]  = params.popularity_gte;  delete params.popularity_gte; }
   params.api_key = TMDB_KEY;
   const res = await fetch(`https://api.themoviedb.org/3${path}?${new URLSearchParams(params)}`);
   return res.json();
