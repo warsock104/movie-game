@@ -159,15 +159,15 @@ def find_actor_clue(answer_id, credits, exclude_ids, lead_only=False):
 
 # ─── Build full puzzle ─────────────────────────────────────────────────────────
 
-def build_puzzle(movie, used_hint_ids=None):
+def build_puzzle(movie, used_hint_ids=None, force=False):
     """Build a 5-clue puzzle for `movie`. Returns None if clues can't be filled."""
     if used_hint_ids is None:
         used_hint_ids = set()
 
     details = get_movie_details(movie["id"])
 
-    # Skip sequels / franchise entries
-    if details.get("belongs_to_collection"):
+    # Skip sequels / franchise entries (bypass with force=True for manual additions)
+    if not force and details.get("belongs_to_collection"):
         return None
 
     credits = details.get("credits", {})
