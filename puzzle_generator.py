@@ -67,6 +67,16 @@ def fetch_popular_pool(pages=10):
 
 # ─── Already-used answers ──────────────────────────────────────────────────────
 
+def puzzle_exists(date_str):
+    """Return True if a puzzle already exists for this date."""
+    url = f"{SUPABASE_URL}/rest/v1/daily_puzzles?puzzle_date=eq.{date_str}&select=puzzle_date"
+    r = requests.get(url, headers={
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+    }, timeout=10)
+    r.raise_for_status()
+    return len(r.json()) > 0
+
 def fetch_used_ids():
     """Return set of answer_tmdb_id already stored in Supabase."""
     url = f"{SUPABASE_URL}/rest/v1/daily_puzzles?select=answer_tmdb_id"
@@ -232,6 +242,10 @@ def main():
     date_str    = target_date.isoformat()
 
     print(f"Generating puzzle for {date_str}…")
+
+    if puzzle_exists(date_str):
+        print(f"[SKIP] Puzzle for {date_str} already exists — not overwriting.")
+        return
 
     used_ids = fetch_used_ids()
     pool     = fetch_popular_pool(pages=15)
