@@ -205,15 +205,23 @@ def build_puzzle(movie, used_hint_ids=None, force=False):
 
 def upsert_puzzle(date_str, puzzle_data):
     payload = {"puzzle_date": date_str, **puzzle_data}
-    # clues is already a list — pass as-is so requests serialises it as a JSON array
-
-    url = f"{SUPABASE_URL}/rest/v1/daily_puzzles?on_conflict=puzzle_date"
-    r = requests.post(url, json=payload, headers={
-        "apikey": SUPABASE_KEY,
+    auth = {
+        "apikey":        SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type":  "application/json",
-        "Prefer":        "resolution=merge-duplicates",
-    }, timeout=10)
+    }
+
+    # Remove existing record for this date before inserting
+    requests.delete(
+        f"{SUPABASE_URL}/rest/v1/daily_puzzles?puzzle_date=eq.{date_str}",
+        headers=auth, timeout=10,
+    )
+
+    r = requests.post(
+        f"{SUPABASE_URL}/rest/v1/daily_puzzles",
+        json=payload,
+        headers={**auth, "Content-Type": "application/json"},
+        timeout=10,
+    )
     r.raise_for_status()
     print(f"[OK] Puzzle for {date_str} saved: {puzzle_data['answer_title']}")
 
