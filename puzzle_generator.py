@@ -207,7 +207,7 @@ def upsert_puzzle(date_str, puzzle_data):
     payload = {"puzzle_date": date_str, **puzzle_data}
     # clues is already a list — pass as-is so requests serialises it as a JSON array
 
-    url = f"{SUPABASE_URL}/rest/v1/daily_puzzles"
+    url = f"{SUPABASE_URL}/rest/v1/daily_puzzles?on_conflict=puzzle_date"
     r = requests.post(url, json=payload, headers={
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
