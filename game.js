@@ -174,12 +174,13 @@ async function searchTMDB(query) {
   const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&include_adult=false`;
   const res  = await fetch(url);
   const data = await res.json();
-  renderDropdown(data.results || []);
+  const sorted = (data.results || []).sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
+  renderDropdown(sorted);
 }
 
 function renderDropdown(results) {
   searchResults.innerHTML = "";
-  const top = results.slice(0, 8);
+  const top = results.slice(0, 5);
   if (!top.length) { closeDropdown(); return; }
 
   top.forEach((movie) => {
