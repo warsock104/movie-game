@@ -9,17 +9,12 @@
 <body>
   <header>
     <h1>🎬 CineClue</h1>
-    <p class="subtitle">Guess today's movie from the clues.</p>
+    <p class="subtitle">Each poster is a movie that shares something with today's hidden film — the same director, a cast member, genre, or release year. Use the connections to guess the film in 5 tries.</p>
     <div id="practice-banner">PRACTICE MODE</div>
     <button id="practice-btn">Practice</button>
   </header>
 
   <main>
-    <!-- Clue grid -->
-    <section id="clue-grid">
-      <!-- Clue cards injected by JS -->
-    </section>
-
     <!-- Guess input -->
     <section id="guess-section">
       <div id="search-wrapper">
@@ -35,12 +30,18 @@
       <button id="guess-btn" disabled>Guess</button>
     </section>
 
+    <!-- Clue grid -->
+    <section id="clue-grid">
+      <!-- Clue cards injected by JS -->
+    </section>
+
     <!-- Previous guesses -->
     <section id="guess-history"></section>
 
     <!-- End state (win / lose) -->
     <div id="end-screen" class="hidden">
       <div id="end-card">
+        <button id="end-close-btn" aria-label="Close">✕</button>
         <p id="end-emoji"></p>
         <h2 id="end-title"></h2>
         <p id="end-message"></p>

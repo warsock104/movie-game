@@ -25,7 +25,7 @@ MIN_POPULARITY  = 30
 # Clue hint movies must still be recognisable
 HINT_MIN_VOTES  = 1000
 
-CLUE_ORDER = ["DIRECTOR", "GENRE", "YEAR", "ACTOR", "ACTOR"]
+CLUE_ORDER = ["YEAR", "GENRE", "ACTOR", "ACTOR", "DIRECTOR"]
 
 # ─── TMDB helpers ─────────────────────────────────────────────────────────────
 
@@ -187,11 +187,11 @@ def build_puzzle(movie, used_hint_ids=None, force=False):
     clues = []
 
     builders = [
-        lambda: find_director_clue(movie["id"], movie["id"], credits),
-        lambda: find_genre_clue(movie["id"], genres),
         lambda: find_year_clue(movie["id"], movie.get("release_date")),
-        lambda: find_actor_clue(movie["id"], credits, used_actor_ids, lead_only=True),
-        lambda: find_actor_clue(movie["id"], credits, used_actor_ids),
+        lambda: find_genre_clue(movie["id"], genres),
+        lambda: find_actor_clue(movie["id"], credits, used_actor_ids),           # supporting
+        lambda: find_actor_clue(movie["id"], credits, used_actor_ids, lead_only=True),  # lead
+        lambda: find_director_clue(movie["id"], movie["id"], credits),
     ]
 
     for build in builders:

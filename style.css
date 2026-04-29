@@ -40,7 +40,7 @@ header h1 {
 }
 
 header .subtitle {
-  color: var(--muted);
+  color: #c8c8d8;
   margin-top: 4px;
   font-size: 0.95rem;
 }
@@ -303,6 +303,7 @@ main {
 #end-screen.hidden { display: none; }
 
 #end-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -316,6 +317,22 @@ main {
   gap: 12px;
   animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
 }
+
+#end-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+#end-close-btn:hover { color: var(--text); }
 
 #end-emoji   { font-size: 2.8rem; }
 #end-title   { font-size: 1.4rem; font-weight: 800; }

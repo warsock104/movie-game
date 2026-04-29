@@ -4,3 +4,4 @@ __pycache__/
 .DS_Store
 puzzle_builder.html
 builder_server.py
+test.html

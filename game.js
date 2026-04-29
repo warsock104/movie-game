@@ -5,6 +5,10 @@ const TMDB_KEY      = "74aa14a014f685118e47f13cfaaabf07";
 const TMDB_IMG      = "https://image.tmdb.org/t/p/w342";
 const MAX_GUESSES   = 5;
 
+// Display order: YEAR → GENRE → ACTOR (supporting) → ACTOR (lead) → DIRECTOR
+// Stable sort preserves the relative order of the two ACTOR clues.
+const CATEGORY_RANK = { YEAR: 0, GENRE: 1, ACTOR: 2, DIRECTOR: 4 };
+
 // ─── State ─────────────────────────────────────────────────────────────────
 let puzzle        = null;   // { answer_tmdb_id, answer_title, answer_poster, clues[] }
 let cluesShown    = 1;      // how many clue cards are visible
@@ -25,7 +29,7 @@ const endScreen     = document.getElementById("end-screen");
 
 // ─── Init ───────────────────────────────────────────────────────────────────
 (async () => {
-  const today = localDateString();
+  const today = getTargetDate();
   const saved = loadState(today);
 
   puzzle = await fetchPuzzle(today);
@@ -62,8 +66,12 @@ async function fetchPuzzle(date) {
 function renderClues() {
   clueGrid.innerHTML = "";
 
+  const sorted = [...puzzle.clues].sort(
+    (a, b) => (CATEGORY_RANK[a.category] ?? 99) - (CATEGORY_RANK[b.category] ?? 99)
+  );
+
   for (let i = 0; i < MAX_GUESSES; i++) {
-    const clue = puzzle.clues[i];
+    const clue = sorted[i];
     const card = document.createElement("div");
     card.className = "clue-card";
     card.dataset.index = i;
@@ -72,7 +80,7 @@ function renderClues() {
       // Revealed clue
       const label = document.createElement("span");
       label.className = "clue-label";
-      label.textContent = clue.category;
+      label.textContent = categoryLabel(clue.category);
 
       const img = document.createElement("img");
       img.className = "clue-poster";
@@ -105,7 +113,7 @@ function renderClues() {
       const label = document.createElement("span");
       label.className = "clue-label";
       label.style.opacity = "0.3";
-      label.textContent = clue.category;
+      label.textContent = categoryLabel(clue.category);
 
       card.appendChild(label);
       card.appendChild(placeholder);
@@ -266,6 +274,8 @@ function endGame(won) {
 
   endScreen.classList.remove("hidden");
 
+  document.getElementById("end-close-btn").onclick = () => endScreen.classList.add("hidden");
+
   const shareBtn       = document.getElementById("share-btn");
   const newPracticeBtn = document.getElementById("new-practice-btn");
   shareBtn.style.display       = isPractice ? "none" : "";
@@ -333,6 +343,12 @@ function localDateString() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function getTargetDate() {
+  const param = new URLSearchParams(window.location.search).get("date");
+  if (param && /^\d{4}-\d{2}-\d{2}$/.test(param)) return param;
+  return localDateString();
+}
+
 // ─── Practice mode ────────────────────────────────────────────────────────────
 document.getElementById("practice-btn").addEventListener("click", startPractice);
 
@@ -390,24 +406,28 @@ async function buildPracticePuzzle() {
   const credits = details.credits || {};
   const genres  = details.genres  || [];
 
-  const clues   = [];
-  const usedIds = new Set([movie.id]);
+  const clues        = [];
+  const usedIds      = new Set([movie.id]);
+  const usedActorIds = new Set();
+  const cast         = (credits.cast || []).sort((a, b) => (a.order || 99) - (b.order || 99));
 
-  // Director
-  const directors = (credits.crew || []).filter(c => c.job === "Director");
-  if (directors.length) {
+  // 1 — Year
+  if (details.release_date) {
+    const year = details.release_date.slice(0, 4);
     const d = await tmdbFetch("/discover/movie", {
-      with_crew: directors[0].id, sort_by: "vote_count.desc",
-      vote_count_gte: 1000, with_original_language: "en", page: 1,
+      primary_release_year: year,
+      sort_by: "vote_count.desc", vote_count_gte: 1000,
+      with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
-      const m = c[0]; usedIds.add(m.id);
-      clues.push({ ...makeClue("DIRECTOR", m), connection: directors[0].name });
+      const m = c[Math.floor(Math.random() * Math.min(10, c.length))];
+      usedIds.add(m.id);
+      clues.push({ ...makeClue("YEAR", m), connection: year });
     }
   }
 
-  // Genre
+  // 2 — Genre
   if (genres.length) {
     const d = await tmdbFetch("/discover/movie", {
       with_genres: genres[0].id, sort_by: "vote_count.desc",
@@ -421,24 +441,23 @@ async function buildPracticePuzzle() {
     }
   }
 
-  // Year
-  if (details.release_date) {
-    const year = details.release_date.slice(0, 4);
+  // 3 — Supporting actor (cast positions 1–5)
+  for (const actor of cast.slice(1, 6)) {
+    if (clues.filter(c => c.category === "ACTOR").length >= 1) break;
+    if (usedActorIds.has(actor.id)) continue;
     const d = await tmdbFetch("/discover/movie", {
-      primary_release_year: year,
-      sort_by: "vote_count.desc", vote_count_gte: 1000,
-      with_original_language: "en", page: 1,
+      with_cast: actor.id, sort_by: "vote_count.desc",
+      vote_count_gte: 1000, with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
-      const m = c[Math.floor(Math.random() * Math.min(10, c.length))];
-      usedIds.add(m.id); clues.push({ ...makeClue("YEAR", m), connection: year });
+      const m = c[Math.floor(Math.random() * Math.min(8, c.length))];
+      usedIds.add(m.id); usedActorIds.add(actor.id);
+      clues.push({ ...makeClue("ACTOR", m), connection: actor.name });
     }
   }
 
-  // Actor 1: always the top-billed lead
-  const cast = (credits.cast || []).sort((a, b) => (a.order || 99) - (b.order || 99));
-  const usedActorIds = new Set();
+  // 4 — Lead actor (top-billed)
   if (cast.length) {
     const lead = cast[0];
     const d = await tmdbFetch("/discover/movie", {
@@ -453,19 +472,17 @@ async function buildPracticePuzzle() {
     }
   }
 
-  // Actor 2: next available supporting actor
-  for (const actor of cast.slice(1, 6)) {
-    if (clues.filter(c => c.category === "ACTOR").length >= 2) break;
-    if (usedActorIds.has(actor.id)) continue;
+  // 5 — Director
+  const directors = (credits.crew || []).filter(c => c.job === "Director");
+  if (directors.length) {
     const d = await tmdbFetch("/discover/movie", {
-      with_cast: actor.id, sort_by: "vote_count.desc",
+      with_crew: directors[0].id, sort_by: "vote_count.desc",
       vote_count_gte: 1000, with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
-      const m = c[Math.floor(Math.random() * Math.min(8, c.length))];
-      usedIds.add(m.id); usedActorIds.add(actor.id);
-      clues.push({ ...makeClue("ACTOR", m), connection: actor.name });
+      const m = c[0]; usedIds.add(m.id);
+      clues.push({ ...makeClue("DIRECTOR", m), connection: directors[0].name });
     }
   }
 
@@ -489,12 +506,16 @@ function makeClue(category, movie) {
 }
 
 function connectionLabel(clue) {
-  switch (clue.category) {
-    case "DIRECTOR": return `Director: ${clue.connection}`;
-    case "GENRE":    return `Genre: ${clue.connection}`;
-    case "YEAR":     return `Year: ${clue.connection}`;
-    case "ACTOR":    return `Starring: ${clue.connection}`;
-    default:         return clue.connection;
+  return clue.connection || "";
+}
+
+function categoryLabel(category) {
+  switch (category) {
+    case "YEAR":     return "Same Year As...";
+    case "GENRE":    return "Same Genre As...";
+    case "ACTOR":    return "Actor Also In...";
+    case "DIRECTOR": return "Also Directed By...";
+    default:         return category;
   }
 }
 
