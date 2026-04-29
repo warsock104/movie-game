@@ -13,7 +13,7 @@
       <h1><img src="logo.svg" class="site-logo" alt=""> CineClue</h1>
       <span id="streak-display"></span>
     </div>
-    <p class="subtitle">Each poster is a movie that shares something with today's hidden film — the same director, a cast member, genre, or release year. Use the connections to guess the film in 5 tries.</p>
+    <p class="subtitle">Guess the hidden film from the connected clues.</p>
     <div id="practice-banner">PRACTICE MODE</div>
     <div class="header-buttons">
       <button id="stats-btn">📊 Stats</button>
@@ -61,6 +61,38 @@
           <p id="next-puzzle-label">Next puzzle in</p>
           <p id="next-puzzle-countdown"></p>
         </div>
+      </div>
+    </div>
+
+    <!-- Tutorial overlay -->
+    <div id="tutorial-overlay" class="hidden">
+      <div id="tutorial-card">
+        <h2 class="tutorial-title">How to Play</h2>
+        <div class="tutorial-steps">
+          <div class="tutorial-step">
+            <span class="step-icon">🎬</span>
+            <div class="step-text">
+              <strong>Each clue is a movie poster</strong>
+              <p>It shares something with today's hidden film — the same director, cast member, genre, or release year.</p>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <span class="step-icon">🏷️</span>
+            <div class="step-text">
+              <strong>The label is your hint</strong>
+              <p>Look above each poster — it tells you the connection. <em>Same Genre As…</em> or <em>Actor Also In…</em></p>
+            </div>
+          </div>
+          <div class="tutorial-step">
+            <span class="step-icon">🎯</span>
+            <div class="step-text">
+              <strong>5 tries to get it</strong>
+              <p>Wrong guesses unlock the next clue. Use as few clues as possible for the best score.</p>
+            </div>
+          </div>
+        </div>
+        <button id="tutorial-got-it">Got it!</button>
+        <p class="tutorial-hint">or click outside to dismiss</p>
       </div>
     </div>
 

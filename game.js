@@ -41,6 +41,7 @@ const endScreen     = document.getElementById("end-screen");
   }
 
   renderStreak();
+  showTutorialIfNew();
 
   if (saved) {
     restoreState(saved);
@@ -376,6 +377,23 @@ function openStatsModal() {
   }
 
   document.getElementById("stats-modal").classList.remove("hidden");
+}
+
+function showTutorialIfNew() {
+  if (localStorage.getItem("cineclue_seen_tutorial")) return;
+  const overlay = document.getElementById("tutorial-overlay");
+  overlay.classList.remove("hidden");
+
+  function dismiss() {
+    overlay.classList.add("hidden");
+    localStorage.setItem("cineclue_seen_tutorial", "1");
+  }
+
+  document.getElementById("tutorial-got-it").addEventListener("click", dismiss);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) dismiss(); });
+  document.addEventListener("keydown", function onKey(e) {
+    if (e.key === "Escape") { dismiss(); document.removeEventListener("keydown", onKey); }
+  });
 }
 
 document.getElementById("stats-btn").addEventListener("click", openStatsModal);
