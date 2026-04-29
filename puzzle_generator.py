@@ -121,9 +121,12 @@ def find_genre_clue(answer_id, genres):
     candidates = [m for m in data.get("results", []) if m["id"] != answer_id]
     if not candidates:
         return None
-    # Pick randomly from top 20 so clues vary day-to-day
     m = random.choice(candidates[:20])
-    return {"category": "GENRE", "connection": genres[0]["name"],
+    # Show all shared genres, not just the first
+    answer_genre_ids = {g["id"] for g in genres}
+    shared = [g["name"] for g in genres if g["id"] in set(m.get("genre_ids", []))]
+    connection = " / ".join(shared) if shared else genres[0]["name"]
+    return {"category": "GENRE", "connection": connection,
             "hint_tmdb_id": m["id"],
             "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
 

@@ -587,7 +587,10 @@ async function buildPracticePuzzle() {
     if (c.length) {
       const m = c[Math.floor(Math.random() * Math.min(20, c.length))];
       usedIds.add(m.id);
-      clues.push({ ...makeClue("GENRE", m), connection: genres[0].name });
+      const answerGenreIds = new Set(genres.map(g => g.id));
+      const shared = genres.filter(g => (m.genre_ids || []).includes(g.id)).map(g => g.name);
+      const connection = shared.length ? shared.join(" / ") : genres[0].name;
+      clues.push({ ...makeClue("GENRE", m), connection });
     }
   }
 
