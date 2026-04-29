@@ -1,0 +1,35 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Popcorn blobs -->
+  <ellipse cx="32" cy="10" rx="10" ry="9"  fill="#FFF3C4"/>
+  <ellipse cx="18" cy="16" rx="8"  ry="7"  fill="#FFE07A"/>
+  <ellipse cx="46" cy="16" rx="8"  ry="7"  fill="#FFF3C4"/>
+
+  <!-- Bucket body -->
+  <path d="M 10 26 L 54 26 L 46 62 L 18 62 Z" fill="#12121a"/>
+
+  <!-- Stripes -->
+  <clipPath id="bc">
+    <path d="M 10 26 L 54 26 L 46 62 L 18 62 Z"/>
+  </clipPath>
+  <g clip-path="url(#bc)">
+    <rect x="10" y="25" width="9" height="38" fill="#e2b94b" opacity="0.25"/>
+    <rect x="27" y="25" width="9" height="38" fill="#e2b94b" opacity="0.25"/>
+    <rect x="44" y="25" width="9" height="38" fill="#e2b94b" opacity="0.25"/>
+  </g>
+
+  <!-- Bucket border -->
+  <path d="M 10 26 L 54 26 L 46 62 L 18 62 Z"
+        fill="none" stroke="#e2b94b" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <!-- Rim -->
+  <rect x="7" y="22" width="50" height="8" rx="3" fill="#e2b94b"/>
+
+  <!-- ? -->
+  <text x="32" y="54"
+        text-anchor="middle"
+        font-family="'Segoe UI', system-ui, sans-serif"
+        font-size="22" font-weight="900"
+        fill="#e2b94b">?</text>
+
+</svg>

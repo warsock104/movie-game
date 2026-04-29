@@ -5,13 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CineClue — Daily Movie Game</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
   <header>
-    <h1>🎬 CineClue</h1>
+    <div class="header-top">
+      <h1><img src="logo.svg" class="site-logo" alt=""> CineClue</h1>
+      <span id="streak-display"></span>
+    </div>
     <p class="subtitle">Each poster is a movie that shares something with today's hidden film — the same director, a cast member, genre, or release year. Use the connections to guess the film in 5 tries.</p>
     <div id="practice-banner">PRACTICE MODE</div>
-    <button id="practice-btn">Practice</button>
+    <div class="header-buttons">
+      <button id="stats-btn">📊 Stats</button>
+      <button id="practice-btn">Practice</button>
+    </div>
   </header>
 
   <main>
@@ -45,10 +52,31 @@
         <p id="end-emoji"></p>
         <h2 id="end-title"></h2>
         <p id="end-message"></p>
+        <p id="end-streak"></p>
         <img id="end-poster" src="" alt="">
         <p id="end-movie-title"></p>
         <button id="share-btn">Share Result</button>
         <button id="new-practice-btn">New Practice</button>
+        <div id="next-puzzle">
+          <p id="next-puzzle-label">Next puzzle in</p>
+          <p id="next-puzzle-countdown"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats modal -->
+    <div id="stats-modal" class="hidden">
+      <div id="stats-card">
+        <button id="stats-close-btn" aria-label="Close">✕</button>
+        <h2 class="stats-title">Statistics</h2>
+        <div id="stats-grid">
+          <div class="stat-cell"><span class="stat-num" id="stat-played">0</span><span class="stat-label">Played</span></div>
+          <div class="stat-cell"><span class="stat-num" id="stat-win-pct">0</span><span class="stat-label">Win %</span></div>
+          <div class="stat-cell"><span class="stat-num" id="stat-streak">0</span><span class="stat-label">Streak</span></div>
+          <div class="stat-cell"><span class="stat-num" id="stat-best">0</span><span class="stat-label">Best</span></div>
+        </div>
+        <p class="stats-section-label">Guess Distribution</p>
+        <div id="stats-distribution"></div>
       </div>
     </div>
   </main>

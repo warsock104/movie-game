@@ -32,6 +32,32 @@ header {
   padding: 32px 0 20px;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+#streak-display {
+  display: none;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(226,185,75,0.12);
+  border: 1px solid rgba(226,185,75,0.3);
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: default;
+}
+
+.site-logo {
+  height: 2.2rem;
+  width: auto;
+  vertical-align: middle;
+  margin-bottom: 4px;
+}
+
 header h1 {
   font-size: 2rem;
   font-weight: 800;
@@ -59,8 +85,29 @@ header .subtitle {
   text-transform: uppercase;
 }
 
-#practice-btn {
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
   margin-top: 10px;
+}
+
+#stats-btn {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 18px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+#stats-btn:hover { color: var(--text); border-color: var(--muted); }
+
+#practice-btn {
+  margin-top: 0;
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--border);
@@ -334,6 +381,12 @@ main {
 
 #end-close-btn:hover { color: var(--text); }
 
+#end-streak {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
 #end-emoji   { font-size: 2.8rem; }
 #end-title   { font-size: 1.4rem; font-weight: 800; }
 #end-message { color: var(--muted); font-size: 0.9rem; }
@@ -382,6 +435,153 @@ main {
 }
 
 #new-practice-btn:hover { background: rgba(226,185,75,0.1); }
+
+#next-puzzle {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+#next-puzzle-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+#next-puzzle-countdown {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Stats modal ─────────────────────────────────── */
+#stats-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+#stats-modal.hidden { display: none; }
+
+#stats-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+#stats-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+#stats-close-btn:hover { color: var(--text); }
+
+.stats-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text);
+}
+
+#stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.stat-cell { display: flex; flex-direction: column; gap: 4px; }
+
+.stat-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stats-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+#stats-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dist-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  width: 12px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dist-bar {
+  min-width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  transition: width 0.4s ease;
+}
+
+.dist-bar.filled {
+  background: var(--accent);
+  color: #000;
+}
 
 /* ── Animations ──────────────────────────────── */
 @keyframes fadeIn {

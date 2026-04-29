@@ -10,14 +10,15 @@ const MAX_GUESSES   = 5;
 const CATEGORY_RANK = { YEAR: 0, GENRE: 1, ACTOR: 2, DIRECTOR: 4 };
 
 // ─── State ─────────────────────────────────────────────────────────────────
-let puzzle        = null;   // { answer_tmdb_id, answer_title, answer_poster, clues[] }
-let cluesShown    = 1;      // how many clue cards are visible
-let guessCount    = 0;
-let selectedMovie = null;   // { id, title, year, poster }
-let gameOver      = false;
-let searchTimer   = null;
-let isPractice    = false;
-let searchSetup   = false;
+let puzzle           = null;
+let cluesShown       = 1;
+let guessCount       = 0;
+let selectedMovie    = null;
+let gameOver         = false;
+let searchTimer      = null;
+let isPractice       = false;
+let searchSetup      = false;
+let countdownInterval = null;
 
 // ─── DOM refs ──────────────────────────────────────────────────────────────
 const clueGrid      = document.getElementById("clue-grid");
@@ -38,6 +39,8 @@ const endScreen     = document.getElementById("end-screen");
     showNoPuzzle();
     return;
   }
+
+  renderStreak();
 
   if (saved) {
     restoreState(saved);
@@ -272,16 +275,32 @@ function endGame(won) {
   document.getElementById("end-poster").src          = puzzle.answer_poster || "";
   document.getElementById("end-movie-title").textContent = puzzle.answer_title;
 
+  updateStats(won, getTargetDate());
+  updateStreak(won, getTargetDate());
+
   endScreen.classList.remove("hidden");
 
   document.getElementById("end-close-btn").onclick = () => endScreen.classList.add("hidden");
 
+  const endStreakEl = document.getElementById("end-streak");
+  const { current, best } = loadStreak();
+  if (!isPractice && won && current > 0) {
+    endStreakEl.textContent = current === 1 ? "🔥 Win streak started!" : `🔥 ${current} win streak${current === best ? " — new best!" : ""}`;
+    endStreakEl.style.display = "";
+  } else {
+    endStreakEl.style.display = "none";
+  }
+
   const shareBtn       = document.getElementById("share-btn");
   const newPracticeBtn = document.getElementById("new-practice-btn");
+  const nextPuzzleEl   = document.getElementById("next-puzzle");
   shareBtn.style.display       = isPractice ? "none" : "";
   newPracticeBtn.style.display = "";
+  nextPuzzleEl.style.display   = isPractice ? "none" : "";
   shareBtn.onclick       = () => shareResult(won);
   newPracticeBtn.onclick = () => startPractice();
+
+  if (!isPractice) startCountdown();
 
   // Disable input
   searchInput.disabled = true;
@@ -298,11 +317,104 @@ function shareResult(won) {
     else if (won && i === guessCount - 1)  squares.push("🟩");
     else squares.push("⬛");
   }
-  const text = `🎬 CineClue ${localDateString()}\n${squares.join("")}\nhttps://cineclue.github.io/movie-game/`;
-  navigator.clipboard.writeText(text).then(() => {
+  const lines = [`🎬 CineClue ${localDateString()}`];
+  lines.push(won ? `Cracked on clue ${guessCount} of ${MAX_GUESSES}` : "💀 Stumped!");
+  lines.push(squares.join(""));
+  const { current } = loadStreak();
+  if (current > 1) lines.push(`🔥 ${current} win streak`);
+  lines.push("https://cineclue.github.io/movie-game/");
+  navigator.clipboard.writeText(lines.join("\n")).then(() => {
     document.getElementById("share-btn").textContent = "Copied!";
     setTimeout(() => { document.getElementById("share-btn").textContent = "Share Result"; }, 2000);
   });
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+function loadStats() {
+  const raw = localStorage.getItem("cineclue_stats");
+  return raw ? JSON.parse(raw) : { played: 0, won: 0, distribution: {1:0,2:0,3:0,4:0,5:0}, last_date: null };
+}
+
+function updateStats(won, date) {
+  if (isPractice) return;
+  const stats = loadStats();
+  if (stats.last_date === date) return;
+  stats.played++;
+  if (won) {
+    stats.won++;
+    stats.distribution[guessCount] = (stats.distribution[guessCount] || 0) + 1;
+  }
+  stats.last_date = date;
+  localStorage.setItem("cineclue_stats", JSON.stringify(stats));
+}
+
+function openStatsModal() {
+  const stats  = loadStats();
+  const streak = loadStreak();
+  document.getElementById("stat-played").textContent   = stats.played;
+  document.getElementById("stat-win-pct").textContent  = stats.played > 0 ? Math.round(stats.won / stats.played * 100) : 0;
+  document.getElementById("stat-streak").textContent   = streak.current;
+  document.getElementById("stat-best").textContent     = streak.best;
+
+  const container = document.getElementById("stats-distribution");
+  container.innerHTML = "";
+  const max = Math.max(1, ...Object.values(stats.distribution).map(Number));
+  for (let i = 1; i <= MAX_GUESSES; i++) {
+    const count = stats.distribution[i] || 0;
+    const pct   = count > 0 ? Math.max(8, Math.round(count / max * 100)) : 0;
+    const row   = document.createElement("div");
+    row.className = "dist-row";
+    const label = document.createElement("span");
+    label.className = "dist-label";
+    label.textContent = i;
+    const bar = document.createElement("div");
+    bar.className = `dist-bar${count > 0 ? " filled" : ""}`;
+    bar.style.width = `${pct}%`;
+    bar.textContent = count;
+    row.append(label, bar);
+    container.appendChild(row);
+  }
+
+  document.getElementById("stats-modal").classList.remove("hidden");
+}
+
+document.getElementById("stats-btn").addEventListener("click", openStatsModal);
+document.getElementById("stats-close-btn").addEventListener("click", () => {
+  document.getElementById("stats-modal").classList.add("hidden");
+});
+
+// ─── Streak ───────────────────────────────────────────────────────────────────
+function loadStreak() {
+  const raw = localStorage.getItem("cineclue_streak");
+  return raw ? JSON.parse(raw) : { current: 0, best: 0, last_date: null };
+}
+
+function updateStreak(won, date) {
+  if (isPractice) return;
+  const streak = loadStreak();
+  if (streak.last_date === date) return; // already recorded for this puzzle
+  if (won) {
+    streak.current++;
+    if (streak.current > streak.best) streak.best = streak.current;
+  } else {
+    streak.current = 0;
+  }
+  streak.last_date = date;
+  localStorage.setItem("cineclue_streak", JSON.stringify(streak));
+  renderStreak();
+}
+
+function renderStreak() {
+  const el = document.getElementById("streak-display");
+  if (!el) return;
+  const { current, best } = loadStreak();
+  if (current > 0) {
+    el.textContent = `🔥 ${current}`;
+    el.title = `Best streak: ${best}`;
+    el.style.display = "";
+  } else {
+    el.style.display = "none";
+  }
 }
 
 // ─── Persist state ────────────────────────────────────────────────────────────
@@ -347,6 +459,25 @@ function getTargetDate() {
   const param = new URLSearchParams(window.location.search).get("date");
   if (param && /^\d{4}-\d{2}-\d{2}$/.test(param)) return param;
   return localDateString();
+}
+
+function startCountdown() {
+  if (countdownInterval) clearInterval(countdownInterval);
+  const el = document.getElementById("next-puzzle-countdown");
+  if (!el) return;
+  function tick() {
+    const now      = new Date();
+    const midnight = new Date(now);
+    midnight.setDate(midnight.getDate() + 1);
+    midnight.setHours(0, 0, 0, 0);
+    const diff = midnight - now;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+  tick();
+  countdownInterval = setInterval(tick, 1000);
 }
 
 // ─── Practice mode ────────────────────────────────────────────────────────────
