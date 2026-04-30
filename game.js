@@ -3,7 +3,9 @@ const SUPABASE_URL  = "https://vocsfxosmbpcjvadwddf.supabase.co";
 const SUPABASE_ANON = "sb_publishable_gxIgyHUktN-BuChGRy_5YA_6WdeCMiU";
 const TMDB_KEY      = "74aa14a014f685118e47f13cfaaabf07";
 const TMDB_IMG      = "https://image.tmdb.org/t/p/w342";
-const MAX_GUESSES   = 5;
+const MAX_GUESSES         = 5;
+const HINT_MIN_VOTES      = 20000;
+const MIN_ACTOR_POPULARITY = 20;
 
 // Display order: YEAR → GENRE → ACTOR (supporting) → ACTOR (lead) → DIRECTOR
 // Stable sort preserves the relative order of the two ACTOR clues.
@@ -539,7 +541,7 @@ async function startPractice() {
 async function buildPracticePuzzle() {
   const page = Math.ceil(Math.random() * 5);
   const pool  = await tmdbFetch("/discover/movie", {
-    sort_by: "vote_count.desc", vote_count_gte: 10000,
+    sort_by: "vote_count.desc", vote_count_gte: HINT_MIN_VOTES0,
     with_original_language: "en", page,
   });
   const candidates = (pool.results || []).filter(m =>
@@ -566,7 +568,7 @@ async function buildPracticePuzzle() {
     const year = details.release_date.slice(0, 4);
     const d = await tmdbFetch("/discover/movie", {
       primary_release_year: year,
-      sort_by: "vote_count.desc", vote_count_gte: 1000,
+      sort_by: "vote_count.desc", vote_count_gte: HINT_MIN_VOTES,
       with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
@@ -581,7 +583,7 @@ async function buildPracticePuzzle() {
   if (genres.length) {
     const d = await tmdbFetch("/discover/movie", {
       with_genres: genres[0].id, sort_by: "vote_count.desc",
-      vote_count_gte: 1000, with_original_language: "en", page: 1,
+      vote_count_gte: HINT_MIN_VOTES, with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
@@ -594,13 +596,14 @@ async function buildPracticePuzzle() {
     }
   }
 
-  // 3 — Supporting actor (cast positions 1–5)
-  for (const actor of cast.slice(1, 6)) {
+  // 3 — Supporting actor (cast positions 1–7, filtered by popularity)
+  for (const actor of cast.slice(1, 8)) {
     if (clues.filter(c => c.category === "ACTOR").length >= 1) break;
     if (usedActorIds.has(actor.id)) continue;
+    if ((actor.popularity || 0) < MIN_ACTOR_POPULARITY) continue;
     const d = await tmdbFetch("/discover/movie", {
       with_cast: actor.id, sort_by: "vote_count.desc",
-      vote_count_gte: 1000, with_original_language: "en", page: 1,
+      vote_count_gte: HINT_MIN_VOTES, with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
@@ -610,12 +613,14 @@ async function buildPracticePuzzle() {
     }
   }
 
-  // 4 — Lead actor (top-billed)
-  if (cast.length) {
-    const lead = cast[0];
+  // 4 — Lead actor (top 3 billed, filtered by popularity)
+  for (const lead of cast.slice(0, 3)) {
+    if (clues.filter(c => c.category === "ACTOR").length >= 2) break;
+    if (usedActorIds.has(lead.id)) continue;
+    if ((lead.popularity || 0) < MIN_ACTOR_POPULARITY) continue;
     const d = await tmdbFetch("/discover/movie", {
       with_cast: lead.id, sort_by: "vote_count.desc",
-      vote_count_gte: 1000, with_original_language: "en", page: 1,
+      vote_count_gte: HINT_MIN_VOTES, with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
@@ -630,7 +635,7 @@ async function buildPracticePuzzle() {
   if (directors.length) {
     const d = await tmdbFetch("/discover/movie", {
       with_crew: directors[0].id, sort_by: "vote_count.desc",
-      vote_count_gte: 1000, with_original_language: "en", page: 1,
+      vote_count_gte: HINT_MIN_VOTES, with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
