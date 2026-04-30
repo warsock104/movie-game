@@ -3,8 +3,9 @@ const SUPABASE_URL  = "https://vocsfxosmbpcjvadwddf.supabase.co";
 const SUPABASE_ANON = "sb_publishable_gxIgyHUktN-BuChGRy_5YA_6WdeCMiU";
 const TMDB_KEY      = "74aa14a014f685118e47f13cfaaabf07";
 const TMDB_IMG      = "https://image.tmdb.org/t/p/w342";
-const MAX_GUESSES         = 5;
-const HINT_MIN_VOTES      = 20000;
+const MAX_GUESSES          = 5;
+const ANSWER_MIN_VOTES     = 10000;
+const HINT_MIN_VOTES       = 20000;
 const MIN_ACTOR_POPULARITY = 20;
 
 // Display order: YEAR → GENRE → ACTOR (supporting) → ACTOR (lead) → DIRECTOR
@@ -510,7 +511,7 @@ async function startPractice() {
   btn.disabled = true;
 
   let practicePuzzle = null;
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 20; i++) {
     try { practicePuzzle = await buildPracticePuzzle(); } catch (e) { /* retry */ }
     if (practicePuzzle) break;
   }
@@ -541,7 +542,7 @@ async function startPractice() {
 async function buildPracticePuzzle() {
   const page = Math.ceil(Math.random() * 5);
   const pool  = await tmdbFetch("/discover/movie", {
-    sort_by: "vote_count.desc", vote_count_gte: HINT_MIN_VOTES0,
+    sort_by: "vote_count.desc", vote_count_gte: ANSWER_MIN_VOTES,
     with_original_language: "en", page,
   });
   const candidates = (pool.results || []).filter(m =>
