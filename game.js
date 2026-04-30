@@ -510,6 +510,12 @@ function startCountdown() {
 document.getElementById("practice-btn").addEventListener("click", startPractice);
 
 async function startPractice() {
+  if (puzzle && !gameOver) {
+    const msg = isPractice
+      ? "You haven't finished your current practice game. Start a new one?"
+      : "You haven't finished today's puzzle. Start a practice game?";
+    if (!confirm(msg)) return;
+  }
   const btn = document.getElementById("practice-btn");
   btn.textContent = "Loading…";
   btn.disabled = true;
