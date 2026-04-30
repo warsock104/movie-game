@@ -23,7 +23,9 @@ TMDB_IMG      = "https://image.tmdb.org/t/p/w342"
 MIN_VOTE_COUNT  = 10000
 MIN_POPULARITY  = 30
 # Clue hint movies must still be recognisable
-HINT_MIN_VOTES  = 20000
+HINT_MIN_VOTES        = 20000
+# Actors used as clues must be recognisable (TMDB person popularity)
+MIN_ACTOR_POPULARITY  = 20
 
 CLUE_ORDER = ["YEAR", "GENRE", "ACTOR", "ACTOR", "DIRECTOR"]
 
@@ -151,9 +153,10 @@ def find_year_clue(answer_id, release_date):
 def find_actor_clue(answer_id, credits, exclude_ids, lead_only=False):
     cast = [c for c in credits.get("cast", []) if c["id"] not in exclude_ids]
     cast.sort(key=lambda c: c.get("order", 99))
-    # lead_only=True: only try the top-billed actor (first ACTOR clue)
-    # lead_only=False: try actors 2-6 (second ACTOR clue)
-    pool = cast[:1] if lead_only else cast[1:6]
+    # lead_only=True: top-billed actor; lead_only=False: supporting actors 2-6
+    # Wider ranges compensate for the popularity filter below
+    pool = cast[:3] if lead_only else cast[1:8]
+    pool = [c for c in pool if c.get("popularity", 0) >= MIN_ACTOR_POPULARITY]
     for actor in pool:
         data = tmdb("/discover/movie",
                     with_cast=actor["id"],
