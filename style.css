@@ -92,6 +92,20 @@ header .subtitle {
   margin-top: 10px;
 }
 
+#how-to-play-btn {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 18px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+#how-to-play-btn:hover { color: var(--text); border-color: var(--muted); }
+
 #stats-btn {
   background: transparent;
   color: var(--muted);

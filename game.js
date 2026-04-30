@@ -383,8 +383,7 @@ function openStatsModal() {
   document.getElementById("stats-modal").classList.remove("hidden");
 }
 
-function showTutorialIfNew() {
-  if (localStorage.getItem("cineclue_seen_tutorial")) return;
+function showTutorial() {
   const overlay = document.getElementById("tutorial-overlay");
   overlay.classList.remove("hidden");
 
@@ -393,16 +392,18 @@ function showTutorialIfNew() {
     localStorage.setItem("cineclue_seen_tutorial", "1");
   }
 
-  document.getElementById("tutorial-got-it").addEventListener("click", dismiss);
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) dismiss(); });
+  document.getElementById("tutorial-got-it").onclick = dismiss;
+  overlay.onclick = (e) => { if (e.target === overlay) dismiss(); };
   document.addEventListener("keydown", function onKey(e) {
     if (e.key === "Escape") { dismiss(); document.removeEventListener("keydown", onKey); }
   });
 }
 
-document.getElementById("how-to-play-btn").addEventListener("click", () => {
-  document.getElementById("tutorial-overlay").classList.remove("hidden");
-});
+function showTutorialIfNew() {
+  if (!localStorage.getItem("cineclue_seen_tutorial")) showTutorial();
+}
+
+document.getElementById("how-to-play-btn").addEventListener("click", showTutorial);
 document.getElementById("stats-btn").addEventListener("click", openStatsModal);
 document.getElementById("stats-close-btn").addEventListener("click", () => {
   document.getElementById("stats-modal").classList.add("hidden");
