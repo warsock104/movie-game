@@ -23,7 +23,7 @@ TMDB_IMG      = "https://image.tmdb.org/t/p/w342"
 MIN_VOTE_COUNT  = 10000
 MIN_POPULARITY  = 30
 # Clue hint movies must still be recognisable
-HINT_MIN_VOTES  = 1000
+HINT_MIN_VOTES  = 20000
 
 CLUE_ORDER = ["YEAR", "GENRE", "ACTOR", "ACTOR", "DIRECTOR"]
 
