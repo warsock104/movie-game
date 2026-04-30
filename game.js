@@ -5,7 +5,7 @@ const TMDB_KEY      = "74aa14a014f685118e47f13cfaaabf07";
 const TMDB_IMG      = "https://image.tmdb.org/t/p/w342";
 const MAX_GUESSES          = 5;
 const ANSWER_MIN_VOTES     = 10000;
-const HINT_MIN_VOTES       = 20000;
+const HINT_MIN_VOTES       = 5000;
 const MIN_ACTOR_POPULARITY = 20;
 
 // Display order: YEAR → GENRE → ACTOR (supporting) → ACTOR (lead) → DIRECTOR

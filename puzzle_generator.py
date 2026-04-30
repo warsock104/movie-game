@@ -23,7 +23,7 @@ TMDB_IMG      = "https://image.tmdb.org/t/p/w342"
 MIN_VOTE_COUNT  = 10000
 MIN_POPULARITY  = 30
 # Clue hint movies must still be recognisable
-HINT_MIN_VOTES        = 20000
+HINT_MIN_VOTES        = 5000
 # Actors used as clues must be recognisable (TMDB person popularity)
 MIN_ACTOR_POPULARITY  = 20
 
