@@ -6,7 +6,7 @@ const TMDB_IMG      = "https://image.tmdb.org/t/p/w342";
 const MAX_GUESSES          = 5;
 const ANSWER_MIN_VOTES     = 10000;
 const HINT_MIN_VOTES       = 5000;
-const MIN_ACTOR_POPULARITY = 20;
+const MIN_ACTOR_POPULARITY = 3;
 
 // Display order: YEAR → GENRE → ACTOR (supporting) → ACTOR (lead) → DIRECTOR
 // Stable sort preserves the relative order of the two ACTOR clues.
