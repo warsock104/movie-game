@@ -550,7 +550,7 @@ async function startPractice() {
 }
 
 async function buildPracticePuzzle() {
-  const page = Math.ceil(Math.random() * 5);
+  const page = Math.ceil(Math.random() * 20);
   const pool  = await tmdbFetch("/discover/movie", {
     sort_by: "vote_count.desc", vote_count_gte: ANSWER_MIN_VOTES,
     with_original_language: "en", page,
