@@ -219,8 +219,9 @@ main {
 .clue-connection {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
-  background: #c0392b;
+  color: #f0ece0;
+  background: rgba(192, 57, 43, 0.75);
+  border: 1px solid var(--accent);
   text-align: center;
   max-width: var(--poster-w);
   margin-top: 4px;
