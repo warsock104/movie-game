@@ -313,7 +313,11 @@ function endGame(won) {
 
   saveState();
 
-  if (!isPractice && !window.TEST_MODE) recordAndShowCommunityStats(won, getTargetDate());
+  if (!isPractice && !window.TEST_MODE) {
+    recordAndShowCommunityStats(won, getTargetDate());
+  } else {
+    document.getElementById("community-stats").innerHTML = "";
+  }
 }
 
 async function recordAndShowCommunityStats(won, date) {
