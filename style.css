@@ -419,6 +419,16 @@ main {
   color: var(--accent);
 }
 
+.community-stat {
+  margin: 4px 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+#community-stats {
+  margin: 10px 0 4px;
+}
+
 #share-btn {
   margin-top: 6px;
   background: var(--accent);

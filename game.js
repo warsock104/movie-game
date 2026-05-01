@@ -312,6 +312,52 @@ function endGame(won) {
   guessBtn.disabled    = true;
 
   saveState();
+
+  if (!isPractice) recordAndShowCommunityStats(won, getTargetDate());
+}
+
+async function recordAndShowCommunityStats(won, date) {
+  const statsEl = document.getElementById("community-stats");
+  const alreadyKey = `cineclue_recorded_${date}`;
+
+  try {
+    let completions, wins;
+
+    if (!localStorage.getItem(alreadyKey)) {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/rpc/increment_puzzle_stats`,
+        {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_ANON,
+            "Authorization": `Bearer ${SUPABASE_ANON}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ p_date: date, p_won: won }),
+        }
+      );
+      const data = await res.json();
+      completions = data[0].completions;
+      wins        = data[0].wins;
+      localStorage.setItem(alreadyKey, "1");
+    } else {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/daily_puzzles?puzzle_date=eq.${date}&select=completions,wins`,
+        { headers: { "apikey": SUPABASE_ANON, "Authorization": `Bearer ${SUPABASE_ANON}` } }
+      );
+      const data = await res.json();
+      completions = data[0].completions;
+      wins        = data[0].wins;
+    }
+
+    const winPct = completions > 0 ? Math.round((wins / completions) * 100) : 0;
+    statsEl.innerHTML = `
+      <p class="community-stat">🎬 ${completions} ${completions === 1 ? "person" : "people"} completed today's puzzle</p>
+      <p class="community-stat">🏆 ${winPct}% win rate today</p>
+    `;
+  } catch (e) {
+    statsEl.innerHTML = "";
+  }
 }
 
 // ─── Share ────────────────────────────────────────────────────────────────────
