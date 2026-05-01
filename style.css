@@ -217,13 +217,22 @@ main {
 }
 
 .clue-connection {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  background: #c0392b;
   text-align: center;
   max-width: var(--poster-w);
-  margin-top: 2px;
-  animation: fadeIn 0.3s ease;
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  animation: connectionPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes connectionPop {
+  0%   { opacity: 0; transform: scale(0.5); }
+  70%  { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 /* ── Guess input ─────────────────────────────── */
