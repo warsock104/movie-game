@@ -356,6 +356,7 @@ async function recordAndShowCommunityStats(won, date) {
       <p class="community-stat">🏆 ${winPct}% win rate today</p>
     `;
   } catch (e) {
+    console.error("Community stats error:", e);
     statsEl.innerHTML = "";
   }
 }
