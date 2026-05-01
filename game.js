@@ -283,6 +283,10 @@ function endGame(won) {
   updateStats(won, getTargetDate());
   updateStreak(won, getTargetDate());
 
+  if (won && typeof confetti === "function") {
+    confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+  }
+
   endScreen.classList.remove("hidden");
 
   document.getElementById("end-close-btn").onclick = () => endScreen.classList.add("hidden");
