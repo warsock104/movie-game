@@ -313,7 +313,7 @@ function endGame(won) {
 
   saveState();
 
-  if (!isPractice) recordAndShowCommunityStats(won, getTargetDate());
+  if (!isPractice && !window.TEST_MODE) recordAndShowCommunityStats(won, getTargetDate());
 }
 
 async function recordAndShowCommunityStats(won, date) {
