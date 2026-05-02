@@ -382,10 +382,24 @@ function shareResult(won) {
   const { current } = loadStreak();
   if (current > 1) lines.push(`🔥 ${current} win streak`);
   lines.push("https://moviehunch.com");
-  navigator.clipboard.writeText(lines.join("\n")).then(() => {
-    document.getElementById("share-btn").textContent = "Copied!";
-    setTimeout(() => { document.getElementById("share-btn").textContent = "Share Result"; }, 2000);
-  });
+  const text = lines.join("\n");
+  const btn  = document.getElementById("share-btn");
+  const confirm = () => {
+    btn.textContent = "Copied!";
+    setTimeout(() => { btn.textContent = "Share Result"; }, 2000);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(confirm);
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    confirm();
+  }
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
