@@ -32,3 +32,16 @@ ALTER TABLE practice_puzzles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read"
     ON practice_puzzles FOR SELECT
     USING (true);
+
+-- Odd One Out puzzles (built via ooo_builder.html)
+CREATE TABLE ooo_puzzles (
+    puzzle_date  DATE PRIMARY KEY,
+    rounds       JSONB NOT NULL,
+    created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE ooo_puzzles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read"
+    ON ooo_puzzles FOR SELECT
+    USING (true);

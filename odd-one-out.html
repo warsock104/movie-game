@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odd One Out — MovieHunch</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    /* ── Round pips ─────────────────────────── */
+    #round-tracker {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 20px 0 8px;
+    }
+    .round-pip {
+      width: 36px;
+      height: 7px;
+      border-radius: 4px;
+      background: var(--border);
+      transition: background 0.35s;
+    }
+    .round-pip.active  { background: var(--accent); }
+    .round-pip.done    { background: var(--correct); }
+    .round-pip.failed  { background: var(--wrong); }
+
+    /* ── Actor banner ───────────────────────── */
+    #actor-banner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      max-width: 480px;
+      width: 100%;
+    }
+    #actor-photo {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      flex-shrink: 0;
+    }
+    .actor-text p {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .actor-text h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.2;
+    }
+
+    /* ── Poster grid ────────────────────────── */
+    #poster-grid {
+      display: grid;
+      grid-template-columns: repeat(2, var(--poster-w));
+      gap: 14px;
+    }
+    .poster-card {
+      position: relative;
+      cursor: pointer;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .poster-card:hover { transform: scale(1.04); border-color: var(--muted); }
+    .poster-card img {
+      width: var(--poster-w);
+      height: calc(var(--poster-w) * 1.5);
+      object-fit: cover;
+      display: block;
+    }
+    .poster-card .movie-label {
+      font-size: 0.7rem;
+      text-align: center;
+      padding: 6px 6px 7px;
+      color: var(--muted);
+      line-height: 1.3;
+      background: var(--surface);
+    }
+    .poster-card.correct { border-color: var(--correct); box-shadow: 0 0 14px rgba(76,175,116,0.45); }
+    .poster-card.wrong   { border-color: var(--wrong);   box-shadow: 0 0 14px rgba(192,57,43,0.45); }
+    .poster-card.reveal  { border-color: var(--correct); box-shadow: 0 0 14px rgba(76,175,116,0.3); opacity: 0.85; }
+
+    /* ── Loading ────────────────────────────── */
+    #loading {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #error-msg { display: none; color: var(--wrong); text-align: center; padding: 20px; font-size: 0.9rem; }
+
+    /* ── End card OOO content ───────────────── */
+    #result-grid { display: flex; gap: 8px; justify-content: center; }
+    .result-pip { width: 36px; height: 14px; border-radius: 4px; background: var(--border); }
+    .result-pip.correct { background: var(--correct); }
+    .result-pip.wrong   { background: var(--wrong); }
+
+    .reveal-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      width: 100%;
+      text-align: left;
+    }
+    .reveal-box .rlabel { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 2px; }
+    .reveal-box .rvalue { font-size: 0.9rem; color: var(--text); font-weight: 600; }
+
+    #end-stats-grid { display: flex; gap: 20px; justify-content: center; }
+    .end-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .end-stat-num   { font-size: 1.4rem; font-weight: 800; color: var(--accent); line-height: 1; }
+    .end-stat-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+
+    /* ── Game UI visibility ─────────────────── */
+    #game-ui { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    #game-ui.hidden, #loading.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1><img src="logo.svg" class="site-logo" alt=""> MovieHunch</h1>
+      <span id="streak-display"></span>
+    </div>
+    <p class="subtitle">Odd One Out</p>
+    <div id="practice-banner">PRACTICE MODE</div>
+    <div class="header-buttons">
+      <button id="practice-btn">Practice</button>
+      <button id="stats-btn">📊 Stats</button>
+      <button id="how-to-play-btn">❓ How to Play</button>
+    </div>
+    <nav class="game-tabs" style="margin-top:14px;">
+      <a href="index.html" class="game-tab">🎬 MovieHunch</a>
+      <a href="odd-one-out.html" class="game-tab active">🎯 Odd One Out</a>
+    </nav>
+  </header>
+
+  <main>
+    <div id="round-tracker">
+      <div class="round-pip"></div>
+      <div class="round-pip"></div>
+      <div class="round-pip"></div>
+      <div class="round-pip"></div>
+      <div class="round-pip"></div>
+    </div>
+
+    <p id="no-puzzle-note" style="display:none;text-align:center;color:var(--muted);font-size:0.82rem;margin:6px 0 0;">No daily puzzle today — enjoy practice mode!</p>
+    <div id="loading"><span class="spinner"></span>Loading…</div>
+    <div id="error-wrap" style="display:none;text-align:center;padding:20px;">
+      <p id="error-msg" style="color:var(--wrong);font-size:0.9rem;margin-bottom:14px;"></p>
+      <button id="retry-btn" style="padding:9px 24px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:var(--radius);font-size:0.88rem;font-weight:600;cursor:pointer;">↺ Try Again</button>
+    </div>
+
+    <div id="game-ui" class="hidden">
+      <div id="actor-banner">
+        <img id="actor-photo" src="" alt="">
+        <div class="actor-text">
+          <p>Which movie does NOT star</p>
+          <h2 id="actor-name"></h2>
+        </div>
+      </div>
+      <div id="poster-grid"></div>
+    </div>
+  </main>
+
+  <!-- Stats modal -->
+  <div id="stats-modal" class="hidden">
+    <div id="stats-card">
+      <button id="stats-close-btn" aria-label="Close">✕</button>
+      <h2 class="stats-title">Statistics</h2>
+      <div id="stats-grid">
+        <div class="stat-cell"><span class="stat-num" id="stat-played">0</span><span class="stat-label">Played</span></div>
+        <div class="stat-cell"><span class="stat-num" id="stat-win-pct">0</span><span class="stat-label">Perfect %</span></div>
+        <div class="stat-cell"><span class="stat-num" id="stat-streak">0</span><span class="stat-label">Streak</span></div>
+        <div class="stat-cell"><span class="stat-num" id="stat-best">0</span><span class="stat-label">Best</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to play overlay -->
+  <div id="tutorial-overlay" class="hidden">
+    <div id="tutorial-card">
+      <h2 class="tutorial-title">How to Play</h2>
+      <div class="tutorial-steps">
+        <div class="tutorial-step">
+          <span class="step-icon">🎬</span>
+          <div class="step-text">
+            <strong>An actor is shown</strong>
+            <p>You'll see their photo and name. Three of the four movie posters feature this actor.</p>
+          </div>
+        </div>
+        <div class="tutorial-step">
+          <span class="step-icon">🔍</span>
+          <div class="step-text">
+            <strong>Find the odd one out</strong>
+            <p>One movie poster does NOT feature the actor. Tap it to select it.</p>
+          </div>
+        </div>
+        <div class="tutorial-step">
+          <span class="step-icon">💀</span>
+          <div class="step-text">
+            <strong>One strike and you're out</strong>
+            <p>Pick wrong and the game ends. Complete all 5 rounds for a perfect run.</p>
+          </div>
+        </div>
+      </div>
+      <button id="tutorial-got-it">Got it!</button>
+      <p class="tutorial-hint">or click outside to dismiss</p>
+    </div>
+  </div>
+
+  <!-- End screen modal (mirrors main game structure) -->
+  <div id="end-screen" class="hidden">
+    <div id="end-card">
+      <button id="end-close-btn" aria-label="Close">✕</button>
+      <p id="end-emoji"></p>
+      <h2 id="end-title"></h2>
+      <p id="end-message"></p>
+      <p id="end-streak"></p>
+      <div id="result-grid"></div>
+      <div class="reveal-box" id="reveal-box"></div>
+      <div id="end-stats-grid"></div>
+      <button id="share-btn">Share</button>
+      <button id="new-practice-btn">New Practice</button>
+      <div id="next-puzzle">
+        <p id="next-puzzle-label">Next puzzle in</p>
+        <p id="next-puzzle-countdown"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="odd-one-out.js"></script>
+  <footer style="text-align:center;padding:12px;font-size:11px;opacity:0.5;">This product uses the TMDB API but is not endorsed or certified by TMDB.</footer>
+</body>
+</html>

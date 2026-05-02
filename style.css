@@ -140,6 +140,43 @@ header .subtitle {
 
 #practice-btn:disabled { opacity: 0.45; cursor: default; }
 
+.mode-link-btn {
+  display: inline-block;
+  text-decoration: none;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 18px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.mode-link-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* ── Game tabs ───────────────────────────────── */
+.game-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  width: 100%;
+  max-width: 760px;
+  margin-bottom: 8px;
+}
+.game-tab {
+  padding: 10px 22px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.game-tab:hover { color: var(--text); }
+.game-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
 /* ── Main container ──────────────────────────── */
 main {
   width: 100%;

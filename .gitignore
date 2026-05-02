@@ -3,5 +3,7 @@ __pycache__/
 *.pyc
 .DS_Store
 puzzle_builder.html
+ooo_builder.html
 builder_server.py
+repdate_ooo.py
 test.html
