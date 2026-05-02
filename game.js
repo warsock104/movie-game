@@ -618,6 +618,17 @@ async function startPractice() {
 }
 
 async function buildPracticePuzzle() {
+  // Try curated practice pool from Supabase first
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/practice_puzzles?select=*`, {
+      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` }
+    });
+    const pool = await res.json();
+    if (Array.isArray(pool) && pool.length) {
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+  } catch (e) { /* fall through to dynamic */ }
+
   const page = Math.ceil(Math.random() * 20);
   const pool  = await tmdbFetch("/discover/movie", {
     sort_by: "vote_count.desc", vote_count_gte: ANSWER_MIN_VOTES,
