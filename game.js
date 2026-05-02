@@ -376,7 +376,7 @@ function shareResult(won) {
     else if (won && i === guessCount - 1)  squares.push("🟩");
     else squares.push("⬛");
   }
-  const lines = [`🎬 CineClue ${localDateString()}`];
+  const lines = [`🎬 MovieHunch ${localDateString()}`];
   lines.push(won ? `Cracked on clue ${guessCount} of ${MAX_GUESSES}` : "💀 Stumped!");
   lines.push(squares.join(""));
   const { current } = loadStreak();
