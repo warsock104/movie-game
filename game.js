@@ -621,7 +621,7 @@ async function buildPracticePuzzle() {
   const page = Math.ceil(Math.random() * 20);
   const pool  = await tmdbFetch("/discover/movie", {
     sort_by: "vote_count.desc", vote_count_gte: ANSWER_MIN_VOTES,
-    with_original_language: "en", page,
+    popularity_gte: 30, with_original_language: "en", page,
   });
   const candidates = (pool.results || []).filter(m =>
     (m.release_date || "").slice(0, 4) !== String(new Date().getFullYear())
