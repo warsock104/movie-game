@@ -25,7 +25,7 @@ MIN_POPULARITY  = 30
 # Clue hint movies must still be recognisable
 HINT_MIN_VOTES        = 5000
 # Actors used as clues must be recognisable (TMDB person popularity)
-MIN_ACTOR_POPULARITY  = 3
+MIN_ACTOR_POPULARITY  = 6
 
 CLUE_ORDER = ["YEAR", "GENRE", "ACTOR", "ACTOR", "DIRECTOR"]
 
