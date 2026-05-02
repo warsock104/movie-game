@@ -96,16 +96,15 @@ def find_director_clue(movie_id, answer_id, credits):
     if not directors:
         return None
     director = directors[0]
-    data = tmdb("/discover/movie",
-                with_crew=director["id"],
-                sort_by="vote_count.desc",
-                vote_count_gte=HINT_MIN_VOTES,
-                with_original_language="en",
-                page=1)
-    candidates = [m for m in data.get("results", []) if m["id"] != answer_id]
-    if not candidates:
+    # Use person filmography to guarantee hint was actually directed by them
+    data = tmdb(f"/person/{director['id']}/movie_credits")
+    directed = [m for m in data.get("crew", [])
+                if m.get("job") == "Director" and m["id"] != answer_id
+                and m.get("vote_count", 0) >= HINT_MIN_VOTES]
+    if not directed:
         return None
-    m = candidates[0]
+    directed.sort(key=lambda m: m.get("vote_count", 0), reverse=True)
+    m = directed[0]
     return {"category": "DIRECTOR", "connection": director["name"],
             "hint_tmdb_id": m["id"],
             "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
@@ -113,9 +112,11 @@ def find_director_clue(movie_id, answer_id, credits):
 def find_genre_clue(answer_id, genres):
     if not genres:
         return None
-    genre_id = genres[0]["id"]
+    # Skip Drama (18) — too broad/common to be a useful clue; fall back only if no other genre
+    BROAD_GENRE_IDS = {18}
+    clue_genre = next((g for g in genres if g["id"] not in BROAD_GENRE_IDS), genres[0])
     data = tmdb("/discover/movie",
-                with_genres=genre_id,
+                with_genres=clue_genre["id"],
                 sort_by="vote_count.desc",
                 vote_count_gte=HINT_MIN_VOTES,
                 with_original_language="en",
@@ -124,11 +125,7 @@ def find_genre_clue(answer_id, genres):
     if not candidates:
         return None
     m = random.choice(candidates[:20])
-    # Show all shared genres, not just the first
-    answer_genre_ids = {g["id"] for g in genres}
-    shared = [g["name"] for g in genres if g["id"] in set(m.get("genre_ids", []))]
-    connection = " / ".join(shared) if shared else genres[0]["name"]
-    return {"category": "GENRE", "connection": connection,
+    return {"category": "GENRE", "connection": clue_genre["name"],
             "hint_tmdb_id": m["id"],
             "hint_title": m["title"], "poster_url": poster_url(m.get("poster_path"))}
 

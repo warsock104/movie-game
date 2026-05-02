@@ -708,16 +708,16 @@ async function buildPracticePuzzle() {
     }
   }
 
-  // 5 — Director
+  // 5 — Director (use person filmography to guarantee hint was actually directed by them)
   const directors = (credits.crew || []).filter(c => c.job === "Director");
   if (directors.length) {
-    const d = await tmdbFetch("/discover/movie", {
-      with_crew: directors[0].id, sort_by: "vote_count.desc",
-      vote_count_gte: HINT_MIN_VOTES, with_original_language: "en", page: 1,
-    });
-    const c = (d.results || []).filter(m => !usedIds.has(m.id));
-    if (c.length) {
-      const m = c[0]; usedIds.add(m.id);
+    const person = await tmdbFetch(`/person/${directors[0].id}/movie_credits`);
+    const directed = (person.crew || [])
+      .filter(m => m.job === "Director" && !usedIds.has(m.id) && (m.vote_count || 0) >= HINT_MIN_VOTES)
+      .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
+    if (directed.length) {
+      const m = directed[0];
+      usedIds.add(m.id);
       clues.push({ ...makeClue("DIRECTOR", m), connection: directors[0].name });
     }
   }
