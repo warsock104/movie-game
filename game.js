@@ -382,7 +382,7 @@ function shareResult(won) {
   lines.push(squares.join(""));
   const { current } = loadStreak();
   if (current > 1) lines.push(`🔥 ${current} win streak`);
-  lines.push("https://cineclue.github.io/movie-game/");
+  lines.push("https://moviehunch.com");
   navigator.clipboard.writeText(lines.join("\n")).then(() => {
     document.getElementById("share-btn").textContent = "Copied!";
     setTimeout(() => { document.getElementById("share-btn").textContent = "Share Result"; }, 2000);
@@ -645,20 +645,19 @@ async function buildPracticePuzzle() {
     }
   }
 
-  // 2 — Genre
+  // 2 — Genre (skip Drama ID=18 — too broad/common to be a useful clue)
   if (genres.length) {
+    const BROAD_GENRE_IDS = new Set([18]);
+    const clueGenre = genres.find(g => !BROAD_GENRE_IDS.has(g.id)) || genres[0];
     const d = await tmdbFetch("/discover/movie", {
-      with_genres: genres[0].id, sort_by: "vote_count.desc",
+      with_genres: clueGenre.id, sort_by: "vote_count.desc",
       vote_count_gte: HINT_MIN_VOTES, with_original_language: "en", page: 1,
     });
     const c = (d.results || []).filter(m => !usedIds.has(m.id));
     if (c.length) {
       const m = c[Math.floor(Math.random() * Math.min(20, c.length))];
       usedIds.add(m.id);
-      const answerGenreIds = new Set(genres.map(g => g.id));
-      const shared = genres.filter(g => (m.genre_ids || []).includes(g.id)).map(g => g.name);
-      const connection = shared.length ? shared.join(" / ") : genres[0].name;
-      clues.push({ ...makeClue("GENRE", m), connection });
+      clues.push({ ...makeClue("GENRE", m), connection: clueGenre.name });
     }
   }
 
