@@ -100,7 +100,7 @@ def find_director_clue(movie_id, answer_id, credits):
     data = tmdb(f"/person/{director['id']}/movie_credits")
     directed = [m for m in data.get("crew", [])
                 if m.get("job") == "Director" and m["id"] != answer_id
-                and m.get("vote_count", 0) >= HINT_MIN_VOTES]
+                and m.get("vote_count", 0) >= 100]
     if not directed:
         return None
     directed.sort(key=lambda m: m.get("vote_count", 0), reverse=True)

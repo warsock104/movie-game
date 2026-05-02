@@ -713,7 +713,7 @@ async function buildPracticePuzzle() {
   if (directors.length) {
     const person = await tmdbFetch(`/person/${directors[0].id}/movie_credits`);
     const directed = (person.crew || [])
-      .filter(m => m.job === "Director" && !usedIds.has(m.id) && (m.vote_count || 0) >= HINT_MIN_VOTES)
+      .filter(m => m.job === "Director" && !usedIds.has(m.id) && (m.vote_count || 0) >= 100)
       .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
     if (directed.length) {
       const m = directed[0];
