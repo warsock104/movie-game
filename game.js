@@ -360,7 +360,6 @@ async function recordAndShowCommunityStats(won, date) {
 
     const winPct = completions > 0 ? Math.round((wins / completions) * 100) : 0;
     statsEl.innerHTML = `
-      <p class="community-stat">🎬 ${completions} ${completions === 1 ? "person" : "people"} completed today's puzzle</p>
       <p class="community-stat">🏆 ${winPct}% win rate today</p>
     `;
   } catch (e) {
