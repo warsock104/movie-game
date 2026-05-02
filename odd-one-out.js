@@ -95,17 +95,17 @@ async function fetchPopularActors() {
     if (cached) return JSON.parse(cached);
   } catch {}
 
-  const pages = await Promise.all(
-    Array.from({ length: ACTOR_POOL_PAGES }, (_, i) =>
-      tmdb(`/person/popular?page=${i + 1}`).catch(() => ({ results: [] }))
-    )
-  );
   const candidates = [];
-  pages.forEach(data => candidates.push(...(data.results || []).filter(p =>
-    p.known_for_department === 'Acting' &&
-    p.profile_path &&
-    Math.max(0, ...(p.known_for || []).map(m => m.vote_count || 0)) >= 3000
-  )));
+  for (let page = 1; page <= ACTOR_POOL_PAGES; page++) {
+    try {
+      const data = await tmdb(`/person/popular?page=${page}`);
+      candidates.push(...(data.results || []).filter(p =>
+        p.known_for_department === 'Acting' &&
+        p.profile_path &&
+        Math.max(0, ...(p.known_for || []).map(m => m.vote_count || 0)) >= 3000
+      ));
+    } catch {}
+  }
   const maxVotes = a => Math.max(0, ...(a.known_for || []).map(m => m.vote_count || 0));
   const pool = candidates.sort((a, b) => maxVotes(b) - maxVotes(a));
   try { sessionStorage.setItem(POOL_CACHE_KEY, JSON.stringify(pool)); } catch {}
