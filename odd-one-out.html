@@ -98,22 +98,16 @@
     /* ── Loading ────────────────────────────── */
     #loading {
       text-align: center;
-      padding: 48px 20px;
+      padding: 32px 20px;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
-    .spinner {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-      vertical-align: middle;
-      margin-right: 8px;
+    #loading img {
+      display: block;
+      margin: 0 auto 12px;
+      height: 80px;
+      width: auto;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
     #error-msg { display: none; color: var(--wrong); text-align: center; padding: 20px; font-size: 0.9rem; }
 
     /* ── End card OOO content ───────────────── */
@@ -172,7 +166,10 @@
     </div>
 
     <p id="no-puzzle-note" style="display:none;text-align:center;color:var(--muted);font-size:0.82rem;margin:6px 0 0;">No daily puzzle today — enjoy practice mode!</p>
-    <div id="loading"><span class="spinner"></span>Loading…</div>
+    <div id="loading">
+      <img src="popcorn_boomerang.gif" alt="">
+      Building puzzle…
+    </div>
     <div id="error-wrap" style="display:none;text-align:center;padding:20px;">
       <p id="error-msg" style="color:var(--wrong);font-size:0.9rem;margin-bottom:14px;"></p>
       <button id="retry-btn" style="padding:9px 24px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:var(--radius);font-size:0.88rem;font-weight:600;cursor:pointer;">↺ Try Again</button>
